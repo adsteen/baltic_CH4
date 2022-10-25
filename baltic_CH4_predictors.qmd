@@ -1,0 +1,45 @@
+---
+title: "Baltic geochemistry"
+format: html
+editor: visual
+---
+
+The purpose of this document is to perform a multiple regression in order to better predict upward fluxes of methane from the sediment-water interface in the Baltic Sea. Data are compiled, and largely collected, by Laura Lapham. 
+
+Read in the data. Note that I have converted O2 measured by Winkler (in mL per liter) to match O2 measured by CTD (in mg per liter) using the conversion factor Laura supplied: 
+
+$10\textrm{mL O}_2 = 13.3\textrm{ mg O}_2$
+```{r, message=FALSE}
+library(tidyverse)
+theme_set(theme_classic())
+col.names = c("seq.num", "stn", "flux.SWI", "flux.SMTZ", "SMT.depth.cm",
+              "water.depth.m", "bottom.sal", "bottom.temp", "sed.rate",
+              "POC.rate", "O2.CTD", "O2.Winkler", "lat", "lon", "ref")
+d <- read_csv("data/baltic_geochem.csv",
+              col_names = col.names, skip = 1) %>%
+  mutate(O2 = case_when(!is.na(O2.CTD) == TRUE ~ O2.CTD,
+                        !is.na(O2.Winkler) == TRUE, O2.Winkler * 13.3 / 10,
+                        TRUE ~ NA))
+flux.label <- expression(paste(CH[4], " flux to SWI, ", mu, "mol", " ", m^2, " ", day^{-1}))
+```
+
+# Data exploration
+
+```{r, message=FALSE}
+d_O2_clean <- d %>%
+  filter(!is.na(O2.CTD))
+ggplot(d_O2_clean, aes(x=O2.CTD, y=flux.SWI)) + 
+  geom_smooth(method = "lm") + 
+  geom_point() +
+  scale_x_continuous(name = "[O2] via CTD, units unknown") + 
+  scale_y_continuous(name = flux.label)
+```
+
+There's clearly not much of a correlation. For the record, let's calculate the relationship:
+
+```{r}
+m_O2 <- 
+```
+
+
+
