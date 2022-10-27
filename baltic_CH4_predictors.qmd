@@ -14,10 +14,12 @@ $10\textrm{mL O}_2 = 13.3\textrm{ mg O}_2$
 library(tidyverse)
 theme_set(theme_classic())
 col.names = c("seq.num", "stn", "flux.SWI", "flux.SMTZ", "SMT.depth.cm",
-              "water.depth.m", "bottom.sal", "bottom.temp", "sed.rate",
-              "POC.rate", "O2.CTD", "O2.Winkler", "lat", "lon", "ref")
+              "R.swi.smtz", "water.depth.m", "bottom.sal", "bottom.temp", 
+              "sed.rate", "POC.rate", "O2.CTD", "O2.Winkler", 
+              "lat", "lon", "ref")
 d <- read_csv("data/baltic_geochem.csv",
-              col_names = col.names, skip = 1) %>%
+              col_names = col.names, 
+              skip = 1) %>%
   mutate(O2 = case_when(!is.na(O2.CTD) == TRUE ~ O2.CTD,
                         !is.na(O2.Winkler) == TRUE ~ O2.Winkler * 13.3 / 10,
                         TRUE ~ as.numeric(NA)))
@@ -29,15 +31,42 @@ flux.label <- expression(paste(CH[4], " flux to SWI, ", mu, "mol", " ", m^2, " "
 ```{r, message=FALSE}
 d_O2_clean <- d %>%
   filter(!is.na(O2.CTD))
-ggplot(d_O2_clean, aes(x=O2.CTD, y=flux.SWI)) + 
+p_O2 <- ggplot(d_O2_clean, aes(x=O2.CTD, y=flux.SWI)) + 
   geom_smooth(method = "lm") + 
   geom_point() +
   scale_x_continuous(name = "[O2] via CTD, units unknown") + 
   scale_y_continuous(name = flux.label)
 ```
 
-There's clearly not much of a correlation. For the record, let's calculate the relationship:
 
 ```{r}
-
+p_SMTZ <- d %>%
+  filter(!is.na(SMT.depth.cm)) %>%
+  ggplot(aes(x=SMT.depth.cm, y=flux.SWI)) + 
+  geom_point() 
+print(p_SMTZ)
 ```
+
+
+Let's try a multipe regression. 
+
+```{r}
+d_for_big_model <- d %>%
+  filter(!is.na(flux.SWI) & flux.SWI > 0) %>%
+  mutate(log.SWI.flux = log10(flux.SWI))
+m_big <- lm(log(flux.SWI) ~ water.depth.m + bottom.sal + bottom.temp + SMT.depth.cm + O2, data = d_for_big_model)
+summary(m_big)
+```
+This says that there's no strong relationship between any of those variables and the log of CH4 flux, except for SMT depth. 
+
+One problem is that there isn't a ton of complete data. The model above only has 
+
+The table below gives us a 
+```{r}
+knitr::kable({d %>%
+  filter(!is.na(flux.SWI)) %>%
+  select(seq.num, stn, SMT.depth.cm, water.depth.m, bottom.sal, bottom.temp, POC.rate, O2) %>%
+  apply(MARGIN = 2, function(x) sum(!is.na(x)))
+})
+```
+
