@@ -73,7 +73,7 @@ I think what is happening here has to do with the distribution of flux values:
 
 ```{r}
 ggplot(d, aes(x=flux.SWI)) + 
-  geom_histogram()
+  geom_histogram(bins=50)
 ```
 There are a few really big values, (`r sum(d$flux.SWI > 500)`), which I think are driving the model. 
 
@@ -81,9 +81,9 @@ There are a few really big values, (`r sum(d$flux.SWI > 500)`), which I think ar
 
 A better thing to do would be to take the log of the fluxes, in order to get a more normal distribution of values. Note that for the zero fluxes, I adjusted them to half the log_10 of the minimum flux value. 
 
-```{r, message=FALSE, warning=FALSE}
+```{r}
 ggplot(d, aes(x=log10.flux.SWI)) + 
-  geom_histogram()
+  geom_histogram(bins=50)
 ```
 This looks much more normally-distributed, although obviously there are a bunch of low values. I should probably use a [zero-inflated linear model](https://towardsdatascience.com/zero-inflated-regression-c7dfc656d8af) but I don't really know how to do that^[It seems that what I want to do is to preface the linear regression with a classifier; probably a logistic regression. Not sure how to do that but whatevs.] 
 

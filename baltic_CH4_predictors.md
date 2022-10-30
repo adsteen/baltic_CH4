@@ -115,10 +115,8 @@ values:
 
 ``` r
 ggplot(d, aes(x=flux.SWI)) + 
-  geom_histogram()
+  geom_histogram(bins=50)
 ```
-
-    `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
 ![](baltic_CH4_predictors_files/figure-gfm/unnamed-chunk-4-1.png)
 
@@ -133,7 +131,7 @@ I adjusted them to half the log_10 of the minimum flux value.
 
 ``` r
 ggplot(d, aes(x=log10.flux.SWI)) + 
-  geom_histogram()
+  geom_histogram(bins=50)
 ```
 
 ![](baltic_CH4_predictors_files/figure-gfm/unnamed-chunk-5-1.png)
